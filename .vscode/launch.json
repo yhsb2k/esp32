@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations":
+    [
+        {
+            "name": "esp32",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/${workspaceFolderBasename}",
+            "miDebuggerPath": "xtensa-esp32-elf-gdb",
+            "cwd": "${workspaceFolder}",
+            "externalConsole": true,
+            "internalConsoleOptions": "neverOpen",
+            "preLaunchTask": "gdbserver",
+            "setupCommands":
+            [
+                {
+                    "description": "Connect GDB to GDB server",
+                    "text": "target remote localhost:2331"
+                },
+                {
+                    "description": "Reset target to get to a known state",
+                    "text": "monitor reset"
+                }
+            ]
+        }
+    ]
+}
