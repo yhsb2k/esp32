@@ -1,0 +1,41 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Install dependencies
+        run: |
+            [System.Net.WebClient]::new().downloadFile("https://github.com/espressif/crosstool-NG/releases/download/esp-2021r2/xtensa-esp32-elf-gcc8_4_0-esp-2021r2-patch1-win64.zip", "xtensa-esp32-elf-gcc.zip")
+            [System.IO.Compression.ZipFile]::ExtractToDirectory("xtensa-esp32-elf-gcc.zip", "C:\") | Remove-Item
+            echo "C:\xtensa-esp32-elf\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+            python3 -m pip install --user -r https://raw.githubusercontent.com/espressif/esp-idf/master/requirements.txt
+
+      - name: Checkout with submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Build
+        run: make
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: |
+            wget -q https://github.com/espressif/crosstool-NG/releases/download/esp-2021r2/xtensa-esp32-elf-gcc8_4_0-esp-2021r2-linux-amd64.tar.gz
+            sudo tar xzf xtensa-esp32-elf-gcc8_4_0-esp-2021r2-linux-amd64.tar.gz -C /usr/share/
+            rm xtensa-esp32-elf-gcc8_4_0-esp-2021r2-linux-amd64.tar.gz
+            echo "/usr/share/xtensa-esp32-elf\bin" >> $GITHUB_PATH
+            python3 -m pip install --user -r https://raw.githubusercontent.com/espressif/esp-idf/master/requirements.txt
+
+      - name: Checkout with submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Build
+        run: make
