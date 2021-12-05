@@ -1,5 +1,7 @@
 #include <assert.h>
 #include "drivers/dht.hpp"
+#include "FreeRTOS.h"
+#include "task.h"
 
 using namespace drv;
 
@@ -64,10 +66,10 @@ Exit:
 void dht::wait_ready(void)
 {
     if(!is_first_measurement)
-        vTaskDelayUntil(&recent_time, timeout[_dht_dev]);
+        xTaskDelayUntil(&recent_time, timeout[_dht_dev]);
     else
     {
-        vTaskDelayUntil(&recent_time, timeout[_dht_dev] * 2);
+        xTaskDelayUntil(&recent_time, timeout[_dht_dev] * 2);
         is_first_measurement = false;
     }
 }

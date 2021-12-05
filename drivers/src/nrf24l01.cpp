@@ -794,7 +794,7 @@ void nrf24l01::delay(uint32_t us)
 
 void nrf24l01::exti_cb(periph::exti *exti, void *ctx)
 {
-    TaskHandle_t task = (TaskHandle_t *)ctx;
+    TaskHandle_t task = (TaskHandle_t)ctx;
     
     BaseType_t hi_task_woken = 0;
     vTaskNotifyGiveFromISR(task, &hi_task_woken);
@@ -807,7 +807,7 @@ void nrf24l01::exti_cb(periph::exti *exti, void *ctx)
 
 void nrf24l01::tim_cb(periph::tim *tim, void *ctx)
 {
-    TaskHandle_t task = (TaskHandle_t *)ctx;
+    TaskHandle_t task = (TaskHandle_t)ctx;
     
     BaseType_t hi_task_woken = 0;
     vTaskNotifyGiveFromISR(task, &hi_task_woken);
