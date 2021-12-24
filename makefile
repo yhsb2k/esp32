@@ -1,10 +1,8 @@
 BUILD_DIR ?= build
 BUILD_TYPE ?= Debug
+CMAKE_GENERATOR ?= "Ninja"
 
-ifeq ($(OS),Windows_NT)
-CMAKE_GENERATOR ?= "MinGW Makefiles"
-else
-CMAKE_GENERATOR ?= "Unix Makefiles"
+ifneq ($(OS),Windows_NT)
 NUMBER_OF_PROCESSORS = $(shell grep -c ^processor /proc/cpuinfo)
 endif
 

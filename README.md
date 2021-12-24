@@ -19,5 +19,6 @@ make reset - Reset the target
 ## Requirements
 * [GNU Xtensa (ESP32) Embedded Toolchain](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-tools.html#xtensa-esp32-elf)
 * [CMake](https://cmake.org/download)
-* [Make](http://gnuwin32.sourceforge.net/packages/make.htm)
+* [Make](https://winlibs.com)
+* [Ninja](https://ninja-build.org)
 * [Python3](https://www.python.org/downloads) with installed [requirements](https://github.com/espressif/esp-idf/blob/master/requirements.txt)
