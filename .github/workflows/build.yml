@@ -31,6 +31,7 @@ jobs:
             rm xtensa-esp32-elf-gcc8_4_0-esp-2020r3-linux-amd64.tar.gz
             echo "/usr/share/xtensa-esp32-elf\bin" >> $GITHUB_PATH
             python3 -m pip install --user -r https://raw.githubusercontent.com/espressif/esp-idf/master/requirements.txt
+            sudo apt install ninja-build
 
       - name: Checkout with submodules
         uses: actions/checkout@v2
