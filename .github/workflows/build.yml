@@ -17,6 +17,7 @@ jobs:
           Add-Content $env:GITHUB_PATH "C:\xtensa-esp32-elf\bin"
           # Installing Ninja
           curl -L https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip -o ninja-win.zip
+          mkdir C:\ninja
           tar -xf ninja-win.zip -C C:\ninja
           Add-Content $env:GITHUB_PATH "C:\ninja"
           # Installing esp-idf requirements
