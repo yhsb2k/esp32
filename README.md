@@ -21,4 +21,4 @@ make reset - Reset the target
 * [CMake](https://cmake.org/download)
 * [Make](https://winlibs.com)
 * [Ninja](https://ninja-build.org)
-* [Python3](https://www.python.org/downloads) with installed [requirements](https://github.com/espressif/esp-idf/blob/master/requirements.txt)
+* [Python3](https://www.python.org/downloads) with installed [requirements](https://raw.githubusercontent.com/espressif/esp-idf/v4.0.4/requirements.txt)

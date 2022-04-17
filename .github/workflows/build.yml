@@ -2,20 +2,26 @@ name: build
 
 on: [push, pull_request]
 
+env:
+  gcc_xtensa_esp32_version: gcc8_4_0-esp-2020r3
+
 jobs:
   build-windows:
     runs-on: windows-latest
     steps:
       - name: Install dependencies
         run: |
-            [System.Net.WebClient]::new().downloadFile("https://github.com/espressif/crosstool-NG/releases/download/esp-2020r3/xtensa-esp32-elf-gcc8_4_0-esp-2020r3-win64.zip", "xtensa-esp32-elf-gcc.zip")
-            [System.IO.Compression.ZipFile]::ExtractToDirectory("xtensa-esp32-elf-gcc.zip", "C:\") | Remove-Item
-            echo "C:\xtensa-esp32-elf\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-            python3 -m pip install --user -r https://raw.githubusercontent.com/espressif/esp-idf/master/requirements.txt
-
-            [System.Net.WebClient]::new().downloadFile("https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip", "ninja-win.zip")
-            [System.IO.Compression.ZipFile]::ExtractToDirectory("ninja-win.zip", "C:\ninja") | Remove-Item
-            echo "C:\ninja" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          # Installing GCC Xtensa esp32
+          curl -L https://github.com/espressif/crosstool-NG/releases/download/esp-2020r3/xtensa-esp32-elf-${{env.gcc_xtensa_esp32_version}}-win64.zip -o xtensa-esp32-elf-${{env.gcc_xtensa_esp32_version}}-win64.zip
+          tar -xf xtensa-esp32-elf-${{env.gcc_xtensa_esp32_version}}-win64.zip -C C:\
+          Add-Content $env:GITHUB_PATH "C:\xtensa-esp32-elf\bin"
+          # Installing Ninja
+          curl -L https://github.com/ninja-build/ninja/releases/download/v1.10.2/ninja-win.zip -o ninja-win.zip
+          tar -xf ninja-win.zip -C C:\ninja
+          Add-Content $env:GITHUB_PATH "C:\ninja"
+          # Installing esp-idf requirements
+          python -m pip install --upgrade pip
+          python -m pip install -r https://raw.githubusercontent.com/espressif/esp-idf/v4.0.4/requirements.txt
 
       - name: Checkout with submodules
         uses: actions/checkout@v2
@@ -23,19 +29,42 @@ jobs:
           submodules: recursive
 
       - name: Build
-        run: make
+        run: |
+          cmake . -Bbuild -G Ninja -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build -j
+
+      - name: Set artifacts suffix (if tag)
+        if: startsWith(github.ref, 'refs/tags/') == true
+        run: Add-Content $env:GITHUB_ENV "git_suffix=$(git describe --tags --abbrev=0)"
+
+      - name: Set artifacts suffix (if branch)
+        if: startsWith(github.ref, 'refs/tags/') != true
+        run: Add-Content $env:GITHUB_ENV "git_suffix=$(Write-Output "$(git rev-parse --abbrev-ref HEAD)-$(git rev-parse --short HEAD)")"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: esp32-${{env.git_suffix}}
+          path: |
+            build/bootloader.bin
+            build/bootloader.elf
+            build/bootloader.map
+            build/esp32
+            build/esp32.bin
+            build/esp32.map
+          if-no-files-found: error
 
   build-linux:
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
         run: |
-            wget -q https://github.com/espressif/crosstool-NG/releases/download/esp-2020r3/xtensa-esp32-elf-gcc8_4_0-esp-2020r3-linux-amd64.tar.gz
-            sudo tar xzf xtensa-esp32-elf-gcc8_4_0-esp-2020r3-linux-amd64.tar.gz -C /usr/share/
-            rm xtensa-esp32-elf-gcc8_4_0-esp-2020r3-linux-amd64.tar.gz
-            echo "/usr/share/xtensa-esp32-elf\bin" >> $GITHUB_PATH
-            python3 -m pip install --user -r https://raw.githubusercontent.com/espressif/esp-idf/master/requirements.txt
-            sudo apt install ninja-build
+          wget -q https://github.com/espressif/crosstool-NG/releases/download/esp-2020r3/xtensa-esp32-elf-$gcc_xtensa_esp32_version-linux-amd64.tar.gz
+          sudo tar -xzf xtensa-esp32-elf-$gcc_xtensa_esp32_version-linux-amd64.tar.gz -C /usr/share/
+          echo "/usr/share/xtensa-esp32-elf/bin" >> $GITHUB_PATH
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r https://raw.githubusercontent.com/espressif/esp-idf/v4.0.4/requirements.txt
+          sudo apt update && sudo apt install ninja-build
 
       - name: Checkout with submodules
         uses: actions/checkout@v2
@@ -43,4 +72,6 @@ jobs:
           submodules: recursive
 
       - name: Build
-        run: make
+        run: |
+          cmake . -Bbuild -G Ninja -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build -j
